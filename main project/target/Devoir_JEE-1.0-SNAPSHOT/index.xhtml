@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view>
+    <h:head>
+        <title>Listes des employes</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+        <!--       hadi dyal bootstrap ma3rt malha kat3tini error-->
+        <!--       <h:outputStylesheet library="webjars" name="bootstrap/5.0.0/css/bootstrap.min.css" />-->
+        <style type="text/css">
+            .add-employe-form {
+                width: 300px;
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                background-color: #fff;
+            }</style>
+    </h:head>
+    <h:body>
+
+        <h:form class="d-flex">
+            <h:inputText value="#{employeService.searchQuery}" class="form-control me-2" placeholder="Search" aria-label="Search"/>
+            <h:commandButton value="Search" action="#{employeService.searchEmployees()}" styleClass="btn btn-outline-success"/>
+        </h:form>
+
+
+        <h2>Listes des employes</h2>
+        <h:form>
+            <h:dataTable styleClass="table table-success table-striped-columns" value="#{employeService.employeList}" var="employe">
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.empId']}</f:facet>
+                    #{employe.empId}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.name']}</f:facet>
+                    <h:outputText value="#{employe.name}" rendered="#{not employeService.editModeList[employe]}" />
+                    <h:inputText value="#{employe.name}" rendered="#{employeService.editModeList[employe]}" />
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.departement']}</f:facet>
+                    <h:outputText value="#{employe.departement}" rendered="#{not employeService.editModeList[employe]}" />
+                    <h:inputText value="#{employe.departement}" rendered="#{employeService.editModeList[employe]}" />
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.birthday']}</f:facet>
+                    <!--             this need convert + validator for the date to set a precise format-->
+                    <h:outputText value="#{employe.birthday}" rendered="#{not employeService.editModeList[employe]}"/>
+                    <h:inputText value="#{employe.birthday}" rendered="#{employeService.editModeList[employe]}" converterMessage="Format de date invalid. Veuillez utiliser le format yyyy-MM-dd">
+                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                    </h:inputText>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.email']}</f:facet>
+                    <!--              this needs a validator bach ila dkhl chi mail not unique tl3 erreur -->
+                    <h:outputText value="#{employe.email}" rendered="#{not employeService.editModeList[employe]}" />
+                    <h:inputText value="#{employe.email}" rendered="#{employeService.editModeList[employe]}" />
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{msgs['employe.actions']}</f:facet>
+                    <h:commandButton styleClass="btn btn-secondary btn-lg" value="#{msgs['employe.edit']}" action="#{employeService.toggleEditMode(employe)}" rendered="#{not employeService.editModeList[employe]}"/>
+                    <h:commandButton styleClass="btn btn-secondary btn-lg" value="#{msgs['employe.delete']}" action="#{employeService.deleteEmp(employe.empId)}" rendered="#{not employeService.editModeList[employe]}"/>
+                    <h:commandButton styleClass="btn btn-secondary btn-lg" value="#{msgs['employe.save']}" action="#{employeService.updateEmp(employe)}" rendered="#{employeService.editModeList[employe]}"/>
+                </h:column>
+            </h:dataTable>
+            <h:messages globalOnly="true" style="color: green;" />
+            <h:commandButton styleClass="btn btn-secondary btn-lg" value="#{msgs['employe.add']}" action="#{employeService.switchForm()}" />
+            <br/>
+        </h:form>
+        <h:form>
+            <h:commandButton styleClass="btn btn-secondary btn-lg" value="←" action="#{employeService.switchBackPage()}"/>
+            <h:commandButton styleClass="btn btn-secondary btn-lg" value="→" action="#{employeService.switchNextPage()}"/>
+        </h:form>
+
+        <div>
+            <h:form styleClass="add-employe-form" rendered="#{employeService.form}">
+                <h:outputLabel for="name" value="#{msgs['employe.name']}" />
+                <h:inputText id="name" value="#{employeService.editedEmploye.name}" required="true" styleClass="form-control rounded-3"/>
+                <h:outputLabel for="departement" value="#{msgs['employe.departement']}" />
+                <h:inputText id="departement" value="#{employeService.editedEmploye.departement}" required="true" styleClass="form-control rounded-3"/>
+                <h:outputLabel for="birthday" value="#{msgs['employe.birthday']}" />
+                <h:inputText id="birthday" value="#{employeService.editedEmploye.birthday}" required="true" styleClass="form-control rounded-3" validator="birthdayValidator">
+                    <!--                add validator field and class later for both bday and email when me done-->
+                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+                </h:inputText>
+                <h:message for="birthday" style="color: red;"/>
+                <br/>
+                <h:outputLabel for="email" value="#{msgs['employe.email']}" />
+                <h:inputText id="email" value="#{employeService.editedEmploye.email}" required="true" styleClass="form-control rounded-3" validator="emailValidator"/>
+                <h:message for="email" style="color: red;"/>
+                <br/>
+                <h:commandButton styleClass="btn btn-secondary btn-lg" value="Ajouter" action="#{employeService.addEmp(employeService.editedEmploye)}" />
+            </h:form>
+            <h:form>
+                <h:commandButton value="Cancel" action="#{employeService.switchForm()}" rendered="#{employeService.form}" styleClass="btn btn-warning" style="margin-bottom: 10px;" />
+            </h:form>
+        </div>
+
+    </h:body>
+</f:view>
+</html>
+
+

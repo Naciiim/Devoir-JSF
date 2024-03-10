@@ -1,0 +1,10 @@
+body {
+    background-color: #3d3b3b;
+}
+.add-employe-form {
+    width: 300px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+}
